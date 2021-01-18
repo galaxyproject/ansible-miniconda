@@ -2,6 +2,6 @@
 - hosts: localhost
   remote_user: root
   vars:
-    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR) }}/conda"
+    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') }}/conda"
   roles:
-    - galaxyproject.miniconda
+    - ansible-miniconda

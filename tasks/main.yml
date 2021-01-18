@@ -1,0 +1,42 @@
+---
+
+- name: Check for miniconda existence
+  stat:
+    path: "{{ miniconda_prefix }}/bin/conda"
+  register: miniconda_exists
+
+- name: Include install tasks
+  include_tasks: install.yml
+  when: not miniconda_exists.stat.exists
+
+- name: Collect miniconda version
+  command: "{{ miniconda_prefix }}/bin/conda -V"
+  register: miniconda_installed_version
+  changed_when: false
+
+- name: Update miniconda version (exact)
+  command: >-
+    {{ miniconda_prefix }}/bin/conda install
+    {{ '--override-channels --channel' if miniconda_channels else '' }}
+    {{ miniconda_channels | join(' --channel ') }}
+    conda={{ miniconda_version }}
+  when: miniconda_version != 'latest' and (miniconda_installed_version.stdout.split() | last) != miniconda_version
+
+- name: Update miniconda version (latest)
+  command: >-
+    {{ miniconda_prefix }}/bin/conda update
+    {{ '--override-channels --channel' if miniconda_channels else '' }}
+    {{ miniconda_channels | join(' --channel ') }}
+    conda
+  when: miniconda_version == 'latest'
+
+- name: Create Galaxy conda env
+  command: >-
+    {{ miniconda_prefix }}/bin/conda create --yes
+    {{ '--override-channels --channel' if galaxy_conda_env_channels else '' }}
+    {{ galaxy_conda_env_channels | join(' --channel ') }}
+    --name {{ galaxy_conda_env }}
+    {{ galaxy_conda_env_packages | join(' ') }}
+  args:
+    creates: "{{ miniconda_prefix }}/envs/{{ galaxy_conda_env }}"
+  when: galaxy_conda_create_env

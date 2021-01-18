@@ -1,0 +1,42 @@
+---
+
+# Installers are not released for every version of conda, you can use this to
+# `conda install conda={{ miniconda_version }}` a specific version of conda. If set to `latest` then the role will
+# perform a `conda update conda` instead.
+miniconda_version: latest
+
+# If you wish to install e.g. a conda-forge version of conda you can do so by setting channels. This causes
+# `--override-channels --channel <channel> [--channel <channel> ...]` to be specified on the call to
+# `conda install conda...` or `conda update conda`.
+miniconda_channels: []
+
+# Use a specific installer version and python version. The default is to use the latest installer. If you specify a
+# version, it must exist in https://repo.anaconda.com/miniconda/
+#
+# The Python major and minor version e.g. '3.9' (or '39') of the installer
+miniconda_installer_python: null
+# The conda version of the installer
+miniconda_installer_version: latest
+
+# Automatically create a conda env using virtualenv from conda-forge for Galaxy (https://galaxyproject.org/)
+galaxy_conda_create_env: false
+galaxy_conda_env: _galaxy_
+galaxy_conda_env_channels:
+  - conda-forge
+  - defaults
+galaxy_conda_env_packages:
+  - python=3.6
+  - pip>=9
+  - virtualenv>=16
+
+# You generally should not need to set these yourself
+#
+# ansible_distribution is 'MacOSX' if ansible_system is 'Darwin'
+# ansible_system is 'Linux' on Linux
+miniconda_installer_os: "{{ ansible_distribution if ansible_system == 'Darwin' else ansible_system }}"
+miniconda_installer_arch: "{{ ansible_architecture }}"
+# The installer filename on https://repo.anaconda.com/miniconda/ to fetch and run
+miniconda_installer: >-
+  Miniconda3-{{ 'py' ~ (miniconda_python | replace('.', '')) ~ '_' ~ miniconda_version if miniconda_installer_version != 'latest' else 'latest' }}-{{ miniconda_installer_os }}-{{ miniconda_installer_arch }}.sh
+# The shell to call the downloaded installer script with
+miniconda_installer_shell: /bin/sh

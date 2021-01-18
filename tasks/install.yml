@@ -1,0 +1,26 @@
+---
+
+- name: Create miniconda installer tempfile
+  tempfile:
+    prefix: ansible-miniconda-installer.
+    suffix: .sh
+  register: miniconda_installer_tempfile
+
+- name: Collect miniconda installer
+  get_url:
+    url: "https://repo.anaconda.com/miniconda/{{ miniconda_installer }}"
+    dest: "{{ miniconda_installer_tempfile.path }}"
+    force: true
+
+- name: miniconda installer block
+  block:
+
+    - name: Run miniconda installer
+      command: "{{ miniconda_installer_shell }} {{ miniconda_installer_tempfile.path }} -b -p {{ miniconda_prefix }}"
+
+  always:
+
+    - name: Remove minicoda installer
+      file:
+        path: "{{ miniconda_installer_tempfile.path }}"
+        state: absent

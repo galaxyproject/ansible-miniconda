@@ -1,0 +1,25 @@
+galaxy_info:
+  role_name: miniconda
+  author: The Galaxy Project
+  description: |
+    Install and maintain a Miniconda (https://docs.conda.io/en/latest/miniconda.html) installation, and optionally, for Galaxy (https://galaxyproject.org/)
+  company: The Galaxy Project
+  license: MIT
+  min_ansible_version: 2.7
+  platforms:
+  - name: GenericLinux
+    versions:
+    - all
+  - name: macOS
+    versions:
+    - all
+  - name: MacOSX
+    versions:
+      - 10.13
+      - 10.14
+  galaxy_tags:
+  - system
+  - galaxy
+  - conda
+  - miniconda
+dependencies: []

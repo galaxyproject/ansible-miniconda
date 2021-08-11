@@ -1,4 +1,5 @@
 galaxy_info:
+  namespace: galaxyproject
   role_name: miniconda
   author: The Galaxy Project
   description: |
@@ -6,6 +7,7 @@ galaxy_info:
   company: The Galaxy Project
   license: MIT
   min_ansible_version: 2.7
+  github_branch: main
   platforms:
   - name: GenericLinux
     versions:

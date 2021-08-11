@@ -22,7 +22,9 @@ See [defaults/main.yml](defaults/main.yml) for a full list.
 
 The only required variable is `miniconda_prefix`, the root of the Conda installation.
 
-To avoid reporting `changed` for the conda version update on every run, set `miniconda_version` to a specific version.
+To create arbitrary conda environments, use the variable `miniconda_conda_environments` as shown in the defaults, or the
+example below. The role will also run `conda install` to update these environments if you change their list of packages
+or package versions.
 
 To create an env named `_galaxy_` for creating a venv for [Galaxy][galaxy], set `galaxy_conda_create_env` to `true`. You
 can then use `{{ miniconda_prefix }}/envs/_galaxy_/bin/virtualenv` as the value to `galaxy_virtualenv_command` in
@@ -40,12 +42,17 @@ None
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
 ```yaml
 - hosts: localhost
   vars:
     miniconda_prefix: /conda
+    miniconda_conda_environments:
+      python@3.9:
+        channels:  # optional, defaults to miniconda_channels
+          - conda-forge
+          - defaults
+        packages:
+          - python=3.9
   connection: local
   roles:
      - galaxyproject.miniconda

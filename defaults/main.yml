@@ -18,6 +18,17 @@ miniconda_installer_python: null
 # The conda version of the installer
 miniconda_installer_version: latest
 
+# Create environments using the provided description. e.g.:
+#
+# miniconda_conda_environments:
+#   python@3.9:
+#     channels:  # optional, defaults to miniconda_channels
+#       - conda-forge
+#       - defaults
+#     packages:
+#       - python=3.9
+miniconda_conda_environments: {}
+
 # Automatically create a conda env using virtualenv from conda-forge for Galaxy (https://galaxyproject.org/)
 galaxy_conda_create_env: false
 galaxy_conda_env: _galaxy_

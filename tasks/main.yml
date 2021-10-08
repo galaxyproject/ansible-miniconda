@@ -16,7 +16,7 @@
 
 - name: Update miniconda version (exact)
   command: >-
-    {{ miniconda_prefix }}/bin/conda install
+    {{ miniconda_prefix }}/bin/conda install --yes
     {{ '--override-channels --channel' if miniconda_channels else '' }}
     {{ miniconda_channels | join(' --channel ') }}
     conda={{ miniconda_version }}

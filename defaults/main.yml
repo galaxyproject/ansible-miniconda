@@ -18,6 +18,11 @@ miniconda_installer_python: null
 # The conda version of the installer
 miniconda_installer_version: latest
 
+# List packages to install into conda's base environment
+# e.g.
+# miniconda_base_env_packages: ['mamba']
+miniconda_base_env_packages: []
+
 # Create environments using the provided description. e.g.:
 #
 # miniconda_conda_environments:

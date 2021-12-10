@@ -1,5 +1,5 @@
-Role Name
-=========
+galaxyproject.miniconda
+=======================
 
 An [Ansible][ansible] role for installing and managing [Miniconda][miniconda] installation. Additionally, the role can
 manage the creation of a [Conda][conda] environment that can be used to create a [venv][venv] for [Galaxy][galaxy].

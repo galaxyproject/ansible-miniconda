@@ -40,15 +40,18 @@
     {{ miniconda_base_env_packages | join(' ') }}
   when: miniconda_base_env_packages
 
+# Apparently item.value.copy always refers to the built-in copy method of the dict, whereas item.value['copy'] only does
+# if the key 'copy' is not defined
 - name: Create conda envs
   command: >-
     {{ miniconda_prefix }}/bin/conda create --yes
     {{ '--override-channels --channel' if (item.value.channels | default(miniconda_channels)) else '' }}
     {{ (item.value.channels | default(miniconda_channels)) | join(' --channel ') }}
-    --name {{ item.key }}
+    {{ '--name ' ~ item.key if not item.key.startswith('/') else '--prefix ' ~ item.key }}
+    {{ '--copy' if (item.value['copy'] is boolean and item.value['copy']) else '' }}
     {{ item.value.packages | join(' ') }}
   args:
-    creates: "{{ miniconda_prefix }}/envs/{{ item.key }}"
+    creates: "{{ miniconda_prefix ~ '/envs/' ~ item.key if not item.key.startswith('/') else item.key }}"
   loop: "{{ miniconda_conda_environments | dict2items }}"
 
 - name: Update conda envs
@@ -56,7 +59,8 @@
     {{ miniconda_prefix }}/bin/conda install --yes
     {{ '--override-channels --channel' if (item.value.channels | default(miniconda_channels)) else '' }}
     {{ (item.value.channels | default(miniconda_channels)) | join(' --channel ') }}
-    --name {{ item.key }}
+    {{ '--name ' ~ item.key if not item.key.startswith('/') else '--prefix ' ~ item.key }}
+    {{ '--copy' if (item.value['copy'] is boolean and item.value['copy']) else '' }}
     {{ item.value.packages | join(' ') }}
   register: __miniconda_conda_install_output
   changed_when: "'All requested packages already installed' not in __miniconda_conda_install_output.stdout"

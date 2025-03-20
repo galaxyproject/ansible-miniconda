@@ -1,5 +1,9 @@
 ---
 
+# Controls whether miniconda will be installed and/or updated
+miniconda_install: true
+miniconda_update: true
+
 # Installers are not released for every version of conda, you can use this to
 # `conda install conda={{ miniconda_version }}` a specific version of conda. If set to `latest` then the role will
 # perform a `conda update conda` instead.

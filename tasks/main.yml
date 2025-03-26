@@ -7,30 +7,16 @@
 
 - name: Include install tasks
   include_tasks: install.yml
-  when: not miniconda_exists.stat.exists
+  when: miniconda_install and not miniconda_exists.stat.exists
 
 - name: Collect miniconda version
   command: "{{ miniconda_prefix }}/bin/conda -V"
   register: miniconda_installed_version
   changed_when: false
 
-- name: Update miniconda version (exact)
-  command: >-
-    {{ miniconda_prefix }}/bin/conda install --yes
-    {{ '--override-channels --channel' if miniconda_channels else '' }}
-    {{ miniconda_channels | join(' --channel ') }}
-    conda={{ miniconda_version }}
-  when: miniconda_version != 'latest' and (miniconda_installed_version.stdout.split() | last) != miniconda_version
-
-- name: Update miniconda version (latest)
-  command: >-
-    {{ miniconda_prefix }}/bin/conda update --yes
-    {{ '--override-channels --channel' if miniconda_channels else '' }}
-    {{ miniconda_channels | join(' --channel ') }}
-    conda
-  register: __miniconda_conda_update_conda_output
-  changed_when: "'All requested packages already installed' not in __miniconda_conda_update_conda_output.stdout"
-  when: miniconda_version == 'latest'
+- name: Update miniconda
+  include_tasks: update.yml
+  when: miniconda_update
 
 - name: Install packages to conda base environment
   command: >-

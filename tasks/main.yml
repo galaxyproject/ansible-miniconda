@@ -26,19 +26,41 @@
     {{ miniconda_base_env_packages | join(' ') }}
   when: miniconda_base_env_packages
 
-# Apparently item.value.copy always refers to the built-in copy method of the dict, whereas item.value['copy'] only does
-# if the key 'copy' is not defined
-- name: Create conda envs
-  command: >-
-    {{ miniconda_prefix }}/bin/conda create --yes
-    {{ '--override-channels --channel' if (item.value.channels | default(miniconda_channels)) else '' }}
-    {{ (item.value.channels | default(miniconda_channels)) | join(' --channel ') }}
-    {{ '--name ' ~ item.key if not item.key.startswith('/') else '--prefix ' ~ item.key }}
-    {{ '--copy' if (item.value['copy'] is boolean and item.value['copy']) else '' }}
-    {{ item.value.packages | join(' ') }}
-  args:
-    creates: "{{ miniconda_prefix ~ '/envs/' ~ item.key if not item.key.startswith('/') else item.key }}"
-  loop: "{{ miniconda_conda_environments | dict2items }}"
+- name: Conda env block
+  block:
+
+    - name: Create tempdir for $CONDA_PKGS_DIRS
+      tempfile:
+        state: directory
+        suffix: miniconda_pkg_cache
+      when: (miniconda_conda_environments.values() | selectattr('no_cache', 'defined') | selectattr('no_cache', 'truthy')) is truthy
+      changed_when: false
+      register: __miniconda_pkg_cache_tempdir
+
+    # Apparently item.value.copy always refers to the built-in copy method of the dict, whereas item.value['copy'] only
+    # does if the key 'copy' is not defined
+    - name: Create conda envs
+      command: >-
+        {{ miniconda_prefix }}/bin/conda create --yes
+        {{ '--override-channels --channel' if (item.value.channels | default(miniconda_channels)) else '' }}
+        {{ (item.value.channels | default(miniconda_channels)) | join(' --channel ') }}
+        {{ '--name ' ~ item.key if not item.key.startswith('/') else '--prefix ' ~ item.key }}
+        {{ '--copy' if (item.value['copy'] is boolean and item.value['copy']) else '' }}
+        {{ item.value.packages | join(' ') }}
+      args:
+        creates: "{{ miniconda_prefix ~ '/envs/' ~ item.key if not item.key.startswith('/') else item.key }}"
+      loop: "{{ miniconda_conda_environments | dict2items }}"
+      environment:
+        CONDA_PKGS_DIRS: "{{ (item.value.no_cache | default(false)) | ternary(__miniconda_pkg_cache_tempdir.path, '') }}"
+
+  always:
+
+    - name: Remove $CONDA_PKGS_DIRS tempdir
+      file:
+        path: "{{ __miniconda_pkg_cache_tempdir.path }}"
+        state: absent
+      when: __miniconda_pkg_cache_tempdir.path is defined
+      changed_when: false
 
 - name: Update conda envs
   command: >-

@@ -30,12 +30,19 @@ miniconda_base_env_packages: []
 # Create environments using the provided description. e.g.:
 #
 # miniconda_conda_environments:
-#   python@3.9:
-#     channels:  # optional, defaults to miniconda_channels
+#   python@3.9:        # conda create --name python@3.9 ...
+#     channels:        # optional, defaults to miniconda_channels
 #       - conda-forge
 #       - defaults
+#     copy: false      # use --copy with conda install, optional, defaults to false
+#     no_cache: false  # don't download packages to pkgs/ directory, optional, defaults to false
 #     packages:
 #       - python=3.9
+#   /opt/python@3.10:  # conda create --path /opt/python@3.10
+#     copy: true
+#     packages:
+#       - python=3.10
+#
 miniconda_conda_environments: {}
 
 # Automatically create a conda env using virtualenv from conda-forge for Galaxy (https://galaxyproject.org/)

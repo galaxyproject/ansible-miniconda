@@ -1,64 +1,66 @@
 ---
 
-- name: Check for miniconda existence
-  stat:
-    path: "{{ miniconda_prefix }}/bin/conda"
-  register: miniconda_exists
+- name: Check for miniforge existence
+  ansible.builtin.stat:
+    path: "{{ miniforge_prefix }}/bin/mamba"
+  register: miniforge_exists
 
 - name: Include install tasks
-  include_tasks: install.yml
-  when: miniconda_install and not miniconda_exists.stat.exists
+  ansible.builtin.include_tasks: install.yml
+  when: not miniforge_exists.stat.exists
 
-- name: Collect miniconda version
-  command: "{{ miniconda_prefix }}/bin/conda -V"
-  register: miniconda_installed_version
+- name: Collect miniforge version
+  ansible.builtin.command: "{{ miniforge_prefix }}/bin/mamba -V"
+  register: miniforge_installed_version
   changed_when: false
 
-- name: Update miniconda
+- name: Update miniforge
   include_tasks: update.yml
-  when: miniconda_update
+  when: miniforge_update
 
 - name: Install packages to conda base environment
-  command: >-
-    {{ miniconda_prefix }}/bin/conda install --yes
-    {{ '--override-channels --channel' if (miniconda_channels) else '' }}
-    {{ miniconda_channels | join(' --channel ') }}
-    {{ miniconda_base_env_packages | join(' ') }}
-  when: miniconda_base_env_packages
+  ansible.builtin.command: >-
+    {{ miniforge_prefix }}/bin/mamba install --yes
+    {{ '--override-channels --channel' if (miniforge_channels) else '' }}
+    {{ miniforge_channels | join(' --channel ') }}
+    {{ miniforge_base_env_packages | join(' ') }}
+  when: miniforge_base_env_packages
+  register: __miniforge_install_packages
+  changed_when: __miniforge_install_packages.rc != 0
 
 # Apparently item.value.copy always refers to the built-in copy method of the dict, whereas item.value['copy'] only does
 # if the key 'copy' is not defined
 - name: Create conda envs
-  command: >-
-    {{ miniconda_prefix }}/bin/conda create --yes
-    {{ '--override-channels --channel' if (item.value.channels | default(miniconda_channels)) else '' }}
-    {{ (item.value.channels | default(miniconda_channels)) | join(' --channel ') }}
+  ansible.builtin.command: >-
+    {{ miniforge_prefix }}/bin/mamba create --yes
+    {{ '--override-channels --channel' if (item.value.channels | default(miniforge_channels)) else '' }}
+    {{ (item.value.channels | default(miniforge_channels)) | join(' --channel ') }}
     {{ '--name ' ~ item.key if not item.key.startswith('/') else '--prefix ' ~ item.key }}
     {{ '--copy' if (item.value['copy'] is boolean and item.value['copy']) else '' }}
     {{ item.value.packages | join(' ') }}
   args:
-    creates: "{{ miniconda_prefix ~ '/envs/' ~ item.key if not item.key.startswith('/') else item.key }}"
-  loop: "{{ miniconda_conda_environments | dict2items }}"
+    creates: "{{ miniforge_prefix ~ '/envs/' ~ item.key if not item.key.startswith('/') else item.key }}"
+  loop: "{{ miniforge_conda_environments | dict2items }}"
 
 - name: Update conda envs
-  command: >-
-    {{ miniconda_prefix }}/bin/conda install --yes
-    {{ '--override-channels --channel' if (item.value.channels | default(miniconda_channels)) else '' }}
-    {{ (item.value.channels | default(miniconda_channels)) | join(' --channel ') }}
+  ansible.builtin.command: >-
+    {{ miniforge_prefix }}/bin/mamba install --yes
+    {{ '--override-channels --channel' if (item.value.channels | default(miniforge_channels)) else '' }}
+    {{ (item.value.channels | default(miniforge_channels)) | join(' --channel ') }}
     {{ '--name ' ~ item.key if not item.key.startswith('/') else '--prefix ' ~ item.key }}
     {{ '--copy' if (item.value['copy'] is boolean and item.value['copy']) else '' }}
     {{ item.value.packages | join(' ') }}
-  register: __miniconda_conda_install_output
-  changed_when: "'All requested packages already installed' not in __miniconda_conda_install_output.stdout"
-  loop: "{{ miniconda_conda_environments | dict2items }}"
+  register: __miniforge_conda_install_output
+  changed_when: "'All requested packages already installed' not in __miniforge_conda_install_output.stdout"
+  loop: "{{ miniforge_conda_environments | dict2items }}"
 
 - name: Create Galaxy conda env
-  command: >-
-    {{ miniconda_prefix }}/bin/conda create --yes
+  ansible.builtin.command: >-
+    {{ miniforge_prefix }}/bin/mamba create --yes
     {{ '--override-channels --channel' if galaxy_conda_env_channels else '' }}
     {{ galaxy_conda_env_channels | join(' --channel ') }}
     --name {{ galaxy_conda_env }}
     {{ galaxy_conda_env_packages | join(' ') }}
   args:
-    creates: "{{ miniconda_prefix }}/envs/{{ galaxy_conda_env }}"
+    creates: "{{ miniforge_prefix }}/envs/{{ galaxy_conda_env }}"
   when: galaxy_conda_create_env

@@ -1,51 +1,42 @@
 ---
 
-# Controls whether miniconda will be installed and/or updated
-miniconda_install: true
-miniconda_update: true
-
 # Installers are not released for every version of conda, you can use this to
-# `conda install conda={{ miniconda_version }}` a specific version of conda. If set to `latest` then the role will
+# `conda install conda={{ miniforge_version }}` a specific version of conda. If set to `latest` then the role will
 # perform a `conda update conda` instead.
-miniconda_version: latest
+miniforge_version: latest
 
 # If you wish to install e.g. a conda-forge version of conda you can do so by setting channels. This causes
 # `--override-channels --channel <channel> [--channel <channel> ...]` to be specified on the call to
 # `conda install conda...` or `conda update conda`.
-miniconda_channels: []
+miniforge_channels: []
 
-# Use a specific installer version and python version. The default is to use the latest installer. If you specify a
-# version, it must exist in https://repo.anaconda.com/miniconda/
-#
-# The Python major and minor version e.g. '3.9' (or '39') of the installer
-miniconda_installer_python: null
-# The conda version of the installer
-miniconda_installer_version: latest
+# Use a specific installer version. The default is to use the latest installer. If you specify a
+# version, it must exist in https://github.com/conda-forge/miniforge/releases/
+miniforge_installer_version: latest
 
 # List packages to install into conda's base environment
 # e.g.
-# miniconda_base_env_packages: ['mamba']
-miniconda_base_env_packages: []
+# miniforge_base_env_packages: ['python=3.9']
+miniforge_base_env_packages: []
 
 # Create environments using the provided description. e.g.:
 #
-# miniconda_conda_environments:
+# miniforge_conda_environments:
 #   python@3.9:
-#     channels:  # optional, defaults to miniconda_channels
+#     channels:  # optional, defaults to miniforge_channels
 #       - conda-forge
 #       - defaults
 #     packages:
 #       - python=3.9
-miniconda_conda_environments: {}
+miniforge_conda_environments: {}
 
 # Automatically create a conda env using virtualenv from conda-forge for Galaxy (https://galaxyproject.org/)
 galaxy_conda_create_env: false
 galaxy_conda_env: _galaxy_
 galaxy_conda_env_channels:
   - conda-forge
-  - defaults
 galaxy_conda_env_packages:
-  - python=3.6
+  - python=3.9
   - pip>=9
   - virtualenv>=16
 
@@ -53,10 +44,12 @@ galaxy_conda_env_packages:
 #
 # ansible_distribution is 'MacOSX' if ansible_system is 'Darwin'
 # ansible_system is 'Linux' on Linux
-miniconda_installer_os: "{{ ansible_distribution if ansible_system == 'Darwin' else ansible_system }}"
-miniconda_installer_arch: "{{ ansible_architecture }}"
-# The installer filename on https://repo.anaconda.com/miniconda/ to fetch and run
-miniconda_installer: >-
-  Miniconda3-{{ 'py' ~ (miniconda_python | replace('.', '')) ~ '_' ~ miniconda_version if miniconda_installer_version != 'latest' else 'latest' }}-{{ miniconda_installer_os }}-{{ miniconda_installer_arch }}.sh
+miniforge_installer_os: "{{ ansible_distribution if ansible_system == 'Darwin' else ansible_system }}"
+miniforge_installer_arch: "{{ ansible_architecture }}"
+# The installer filename on https://github.com/conda-forge/miniforge/releases/ to fetch and run
+miniforge_installer: Miniforge3-{{ miniforge_installer_os }}-{{ miniforge_installer_arch }}.sh
+miniforge_release_base_url: "https://github.com/conda-forge/miniforge/releases"
+miniforge_download_url: >-
+  {{ miniforge_release_base_url }}/{{ 'latest/download' if miniforge_installer_version == 'latest' else 'download/' ~ miniforge_installer_version }}/{{ miniforge_installer }}
 # The shell to call the downloaded installer script with
-miniconda_installer_shell: /bin/sh
+miniforge_installer_shell: /bin/sh

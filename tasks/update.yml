@@ -1,19 +1,21 @@
 ---
 
-- name: Update miniconda version (exact)
-  command: >-
-    {{ miniconda_prefix }}/bin/conda install --yes
-    {{ '--override-channels --channel' if miniconda_channels else '' }}
-    {{ miniconda_channels | join(' --channel ') }}
-    conda={{ miniconda_version }}
-  when: miniconda_version != 'latest' and (miniconda_installed_version.stdout.split() | last) != miniconda_version
+- name: Update miniforge version (exact)
+  ansible.builtin.command: >-
+    {{ miniforge_prefix }}/bin/mamba install --yes
+    {{ '--override-channels --channel' if miniforge_channels else '' }}
+    {{ miniforge_channels | join(' --channel ') }}
+    conda={{ miniforge_version }}
+  when: miniforge_version != 'latest' and (miniforge_installed_version.stdout.split() | last) != miniforge_version
+  register: __miniforge_update
+  changed_when: __miniforge_update.rc != 0
 
-- name: Update miniconda version (latest)
-  command: >-
-    {{ miniconda_prefix }}/bin/conda update --yes
-    {{ '--override-channels --channel' if miniconda_channels else '' }}
-    {{ miniconda_channels | join(' --channel ') }}
+- name: Update miniforge version (latest)
+  ansible.builtin.command: >-
+    {{ miniforge_prefix }}/bin/mamba update --yes
+    {{ '--override-channels --channel' if miniforge_channels else '' }}
+    {{ miniforge_channels | join(' --channel ') }}
     conda
-  register: __miniconda_conda_update_conda_output
-  changed_when: "'All requested packages already installed' not in __miniconda_conda_update_conda_output.stdout"
-  when: miniconda_version == 'latest'
+  register: __miniforge_update
+  changed_when: "'All requested packages already installed' not in __miniforge_update.stdout"
+  when: miniforge_version == 'latest'

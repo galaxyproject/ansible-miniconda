@@ -1,12 +1,13 @@
 galaxy_info:
+  standalone: true
   namespace: galaxyproject
-  role_name: miniconda
+  role_name: miniforge
   author: The Galaxy Project
   description: |
-    Install and maintain a Miniconda (https://docs.conda.io/en/latest/miniconda.html) installation, and optionally, for Galaxy (https://galaxyproject.org/)
+    Install and maintain a Miniforge (https://conda-forge.org/download/) installation, and optionally, for Galaxy (https://galaxyproject.org/)
   company: The Galaxy Project
   license: MIT
-  min_ansible_version: 2.7
+  min_ansible_version: "2.7"
   github_branch: main
   platforms:
     - name: GenericLinux
@@ -23,5 +24,5 @@ galaxy_info:
     - system
     - galaxy
     - conda
-    - miniconda
+    - miniforge
 dependencies: []

@@ -6,7 +6,7 @@ galaxy_info:
     Install and maintain a Miniconda (https://docs.conda.io/en/latest/miniconda.html) installation, and optionally, for Galaxy (https://galaxyproject.org/)
   company: The Galaxy Project
   license: MIT
-  min_ansible_version: 2.7
+  min_ansible_version: "2.7"
   github_branch: main
   platforms:
     - name: GenericLinux
@@ -17,8 +17,8 @@ galaxy_info:
         - all
     - name: MacOSX
       versions:
-        - 10.13
-        - 10.14
+        - "10.13"
+        - "10.14"
   galaxy_tags:
     - system
     - galaxy

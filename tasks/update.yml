@@ -1,15 +1,17 @@
 ---
 
 - name: Update miniconda version (exact)
-  command: >-
+  ansible.builtin.command: >-
     {{ miniconda_prefix }}/bin/conda install --yes
     {{ '--override-channels --channel' if miniconda_channels else '' }}
     {{ miniconda_channels | join(' --channel ') }}
     conda={{ miniconda_version }}
+  register: __miniconda_conda_update_conda_output
+  changed_when: "'All requested packages already installed' not in __miniconda_conda_update_conda_output.stdout"
   when: miniconda_version != 'latest' and (miniconda_installed_version.stdout.split() | last) != miniconda_version
 
 - name: Update miniconda version (latest)
-  command: >-
+  ansible.builtin.command: >-
     {{ miniconda_prefix }}/bin/conda update --yes
     {{ '--override-channels --channel' if miniconda_channels else '' }}
     {{ miniconda_channels | join(' --channel ') }}

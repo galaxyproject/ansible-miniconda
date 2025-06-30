@@ -1,35 +1,37 @@
 ---
 
 - name: Check for miniconda existence
-  stat:
+  ansible.builtin.stat:
     path: "{{ miniconda_prefix }}/bin/conda"
   register: miniconda_exists
 
 - name: Include install tasks
-  include_tasks: install.yml
+  ansible.builtin.include_tasks: install.yml
   when: miniconda_install and not miniconda_exists.stat.exists
 
 - name: Collect miniconda version
-  command: "{{ miniconda_prefix }}/bin/conda -V"
+  ansible.builtin.command: "{{ miniconda_prefix }}/bin/conda -V"
   register: miniconda_installed_version
   changed_when: false
 
 - name: Update miniconda
-  include_tasks: update.yml
+  ansible.builtin.include_tasks: update.yml
   when: miniconda_update
 
 - name: Install packages to conda base environment
-  command: >-
+  ansible.builtin.command: >-
     {{ miniconda_prefix }}/bin/conda install --yes
     {{ '--override-channels --channel' if (miniconda_channels) else '' }}
     {{ miniconda_channels | join(' --channel ') }}
     {{ miniconda_base_env_packages | join(' ') }}
+  register: __miniconda_conda_install_conda_output
+  changed_when: "'All requested packages already installed' not in __miniconda_conda_install_conda_output.stdout"
   when: miniconda_base_env_packages
 
 # Apparently item.value.copy always refers to the built-in copy method of the dict, whereas item.value['copy'] only does
 # if the key 'copy' is not defined
 - name: Create conda envs
-  command: >-
+  ansible.builtin.command: >-
     {{ miniconda_prefix }}/bin/conda create --yes
     {{ '--override-channels --channel' if (item.value.channels | default(miniconda_channels)) else '' }}
     {{ (item.value.channels | default(miniconda_channels)) | join(' --channel ') }}
@@ -41,7 +43,7 @@
   loop: "{{ miniconda_conda_environments | dict2items }}"
 
 - name: Update conda envs
-  command: >-
+  ansible.builtin.command: >-
     {{ miniconda_prefix }}/bin/conda install --yes
     {{ '--override-channels --channel' if (item.value.channels | default(miniconda_channels)) else '' }}
     {{ (item.value.channels | default(miniconda_channels)) | join(' --channel ') }}
@@ -53,7 +55,7 @@
   loop: "{{ miniconda_conda_environments | dict2items }}"
 
 - name: Create Galaxy conda env
-  command: >-
+  ansible.builtin.command: >-
     {{ miniconda_prefix }}/bin/conda create --yes
     {{ '--override-channels --channel' if galaxy_conda_env_channels else '' }}
     {{ galaxy_conda_env_channels | join(' --channel ') }}

@@ -57,6 +57,10 @@ miniconda_installer_os: "{{ ansible_distribution if ansible_system == 'Darwin' e
 miniconda_installer_arch: "{{ ansible_architecture }}"
 # The installer filename on https://repo.anaconda.com/miniconda/ to fetch and run
 miniconda_installer: >-
-  Miniconda3-{{ 'py' ~ (miniconda_python | replace('.', '')) ~ '_' ~ miniconda_version if miniconda_installer_version != 'latest' else 'latest' }}-{{ miniconda_installer_os }}-{{ miniconda_installer_arch }}.sh
+  Miniconda3-{{
+    'py' ~ (miniconda_python | replace('.', '')) ~ '_' ~ miniconda_version
+    if miniconda_installer_version != 'latest'
+    else 'latest'
+  }}-{{ miniconda_installer_os }}-{{ miniconda_installer_arch }}.sh
 # The shell to call the downloaded installer script with
 miniconda_installer_shell: /bin/sh

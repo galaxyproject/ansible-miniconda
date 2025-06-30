@@ -1,29 +1,59 @@
 ---
 
-- name: Create miniconda installer tempfile
+- name: Create installer tempfile (shell script or tarball)
   ansible.builtin.tempfile:
     prefix: ansible-miniconda-installer.
-    suffix: .sh
+    suffix: "{{ '.sh' if miniconda_distribution != 'micromamba' else '.tar.bz2' }}"
   register: miniconda_installer_tempfile
 
-- name: Collect miniconda installer
+- name: Download installer - {{ miniconda_distribution }}
   ansible.builtin.get_url:
-    url: "https://repo.anaconda.com/miniconda/{{ miniconda_installer }}"
+    url: "{{ miniconda_installer_url }}"
     dest: "{{ miniconda_installer_tempfile.path }}"
     force: true
-    mode: "0755"
+    mode: '0755'
 
-- name: Miniconda installer block
+- name: Install Conda distribution (shell installers)
+  when: miniconda_distribution != 'micromamba'
   block:
 
-    - name: Run miniconda installer
-      ansible.builtin.command: "{{ miniconda_installer_shell }} {{ miniconda_installer_tempfile.path }} -b -p {{ miniconda_prefix }}"
-      register: __miniforge_install
-      changed_when: __miniforge_install.rc != 0
+    - name: Install Conda distribution
+      ansible.builtin.command: >
+        {{ miniconda_installer_shell | default('/bin/sh') }}
+        {{ miniconda_installer_tempfile.path }} -b -p {{ miniconda_prefix }}
+      register: __conda_install
+      changed_when: __conda_install.rc != 0
 
   always:
+    - name: Remove installer file
+      ansible.builtin.file:
+        path: "{{ miniconda_installer_tempfile.path }}"
+        state: absent
 
-    - name: Remove minicoda installer
+- name: Install Conda distribution (tarball)
+  when: miniconda_distribution == 'micromamba'
+  block:
+    - name: Create Conda install directory
+      ansible.builtin.file:
+        path: "{{ miniconda_prefix }}/bin"
+        state: directory
+        mode: '0755'
+
+    - name: Extract Conda tarball to bin directory
+      ansible.builtin.unarchive:
+        src: "{{ miniconda_installer_tempfile.path }}"
+        dest: "{{ miniconda_prefix }}/bin"
+        remote_src: true
+        extra_opts: [--strip-components=1]
+
+    - name: Ensure micromamba binary is executable
+      ansible.builtin.file:
+        path: "{{ miniconda_prefix }}/bin/micromamba"
+        mode: '0755'
+        state: file
+
+  always:
+    - name: Remove installer file
       ansible.builtin.file:
         path: "{{ miniconda_installer_tempfile.path }}"
         state: absent

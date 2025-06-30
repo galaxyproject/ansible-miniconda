@@ -1,21 +1,50 @@
 ---
 
-- name: Update miniconda version (exact)
+- name: Update installer version (exact)
   ansible.builtin.command: >-
-    {{ miniconda_prefix }}/bin/conda install --yes
+    {{ miniconda_prefix }}/bin/{{ miniconda_version_executable }} install --yes
     {{ '--override-channels --channel' if miniconda_channels else '' }}
     {{ miniconda_channels | join(' --channel ') }}
-    conda={{ miniconda_version }}
+    {{ miniconda_version_executable }}={{ miniconda_version }}
   register: __miniconda_conda_update_conda_output
   changed_when: "'All requested packages already installed' not in __miniconda_conda_update_conda_output.stdout"
-  when: miniconda_version != 'latest' and (miniconda_installed_version.stdout.split() | last) != miniconda_version
+  when:
+    - miniconda_version != 'latest'
+    - miniconda_version_executable != 'micromamba'
+    - (miniconda_installed_version.stdout.split() | last) != miniconda_version
 
-- name: Update miniconda version (latest)
+- name: Update installer version (latest)
   ansible.builtin.command: >-
-    {{ miniconda_prefix }}/bin/conda update --yes
+    {{ miniconda_prefix }}/bin/{{ miniconda_version_executable }} update --yes
     {{ '--override-channels --channel' if miniconda_channels else '' }}
     {{ miniconda_channels | join(' --channel ') }}
-    conda
+    {{ miniconda_version_executable }}
   register: __miniconda_conda_update_conda_output
   changed_when: "'All requested packages already installed' not in __miniconda_conda_update_conda_output.stdout"
-  when: miniconda_version == 'latest'
+  when:
+    - miniconda_version == 'latest'
+    - miniconda_version_executable != 'micromamba'
+
+- name: Update installer version (exact)
+  ansible.builtin.command: >-
+    {{ miniconda_prefix }}/bin/{{ miniconda_version_executable }} self-update --yes
+    {{ '--override-channels --channel' if miniconda_channels else '' }}
+    {{ miniconda_channels | join(' --channel ') }}
+    --version {{ miniconda_version }}
+  register: __miniconda_conda_update_conda_output
+  changed_when: "'All requested packages already installed' not in __miniconda_conda_update_conda_output.stdout"
+  when:
+    - miniconda_version != 'latest'
+    - miniconda_version_executable == 'micromamba'
+    - (miniconda_installed_version.stdout.split() | last) != miniconda_version
+
+- name: Update installer version (latest)
+  ansible.builtin.command: >-
+    {{ miniconda_prefix }}/bin/{{ miniconda_version_executable }} self-update --yes
+    {{ '--override-channels --channel' if miniconda_channels else '' }}
+    {{ miniconda_channels | join(' --channel ') }}
+  register: __miniconda_conda_update_conda_output
+  changed_when: "'All requested packages already installed' not in __miniconda_conda_update_conda_output.stdout"
+  when:
+    - miniconda_version == 'latest'
+    - miniconda_version_executable == 'micromamba'

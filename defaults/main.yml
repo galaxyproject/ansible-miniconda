@@ -62,7 +62,7 @@ miniconda_installer_os: >-
 
 miniconda_installer_arch: "{{ ansible_architecture }}"
 
-# Distruction can be miniconda (default), miniforge, micromamba or anaconda
+# Distribution can be miniconda (default), miniforge, micromamba or anaconda
 miniconda_distribution: "miniconda"
 
 # Examples of installer URL's for the supported distributions:

@@ -19,7 +19,7 @@
 
     - name: Install Conda distribution
       ansible.builtin.command: >
-        {{ miniconda_installer_shell | default('/bin/sh') }}
+        {{ miniconda_installer_shell }}
         {{ miniconda_installer_tempfile.path }} -b -p {{ miniconda_prefix }}
       register: __conda_install
       changed_when: __conda_install.rc != 0

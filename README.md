@@ -22,9 +22,16 @@ See [defaults/main.yml](defaults/main.yml) for a full list.
 
 The only required variable is `miniconda_prefix`, the root of the Conda installation.
 
+The following two variables can be used to select the Conda installer and executable
+
+- `miniconda_distribution`: the values can be `miniforge` (default), `miniconda`, `micromamba` or `anaconda`
+- `miniconda_executable`: the default values depend on the value of `miniconda_distribution`
+  - `mamba`: when the distribution is _miniforge_
+  - `micromamba`: when the distribution is _micromamba_
+  - `conda`: when the distribution is _miniconda_ or _anaconda_
+
 To create arbitrary conda environments, use the variable `miniconda_conda_environments` as shown in the defaults, or the
-example below. The role will also run `conda install` to update these environments if you change their list of packages
-or package versions.
+example below. The role will also update these environments if you change their list of packages or package versions.
 
 To create an env named `_galaxy_` for creating a venv for [Galaxy][galaxy], set `galaxy_conda_create_env` to `true`. You
 can then use `{{ miniconda_prefix }}/envs/_galaxy_/bin/virtualenv` as the value to `galaxy_virtualenv_command` in
@@ -45,10 +52,12 @@ Example Playbook
 ```yaml
 - hosts: localhost
   vars:
-    miniconda_prefix: /conda
+    miniconda_prefix: /conda           # required
+    miniconda_distribution: miniforge  # optional
+    miniconda_executable: mamba        # optional
     miniconda_conda_environments:
       python@3.9:
-        channels:  # optional, defaults to miniconda_channels
+        channels:                     # optional, defaults to miniconda_channels
           - conda-forge
           - defaults
         packages:

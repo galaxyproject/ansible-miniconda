@@ -62,8 +62,8 @@ miniconda_installer_os: >-
 
 miniconda_installer_arch: "{{ ansible_architecture }}"
 
-# Distribution can be miniconda (default), miniforge, micromamba or anaconda
-miniconda_distribution: "miniconda"
+# Distribution can be miniforge (default), miniconda, micromamba or anaconda
+miniconda_distribution: "miniforge"
 
 # Examples of installer URL's for the supported distributions:
 #
@@ -143,10 +143,10 @@ miniconda_installer_shell: /bin/sh
 
 # Executable for installing/updating conda packages.
 miniconda_executable: >-
-  {%- if miniconda_distribution == 'micromamba' -%}
-    micromamba
-  {%- elif miniconda_distribution == 'miniforge' -%}
+  {%- if miniconda_distribution == 'miniforge' -%}
     mamba
+  {%- elif miniconda_distribution == 'micromamba' -%}
+    micromamba
   {%- else -%}
     conda
   {%- endif -%}

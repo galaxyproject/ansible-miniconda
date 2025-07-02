@@ -150,13 +150,3 @@ miniconda_executable: >-
   {%- else -%}
     conda
   {%- endif -%}
-
-# Executable for installing/updating the installer itself.
-miniconda_version_executable: >-
-  {%- if miniconda_distribution == 'miniforge' -%}
-    mamba
-  {%- elif miniconda_distribution == 'micromamba' -%}
-    micromamba
-  {%- else -%}
-    conda
-  {%- endif -%}

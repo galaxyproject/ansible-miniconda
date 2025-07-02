@@ -10,24 +10,18 @@
     path: "{{ miniconda_prefix }}/bin/{{ miniconda_executable }}"
   register: miniconda_exec_info
 
-- name: Include install tasks
+- name: Install installer
   ansible.builtin.include_tasks: install.yml
   when: miniconda_install and not miniconda_exec_info.stat.exists
 
-- name: Check for executable for version check existence
-  ansible.builtin.stat:
-    path: "{{ miniconda_prefix }}/bin/{{ miniconda_version_executable }}"
-  register: miniconda_version_exec_info
-
 - name: Collect installer version
-  ansible.builtin.command: "{{ miniconda_prefix }}/bin/{{ miniconda_version_executable }} --version"
+  ansible.builtin.command: "{{ miniconda_prefix }}/bin/{{ miniconda_executable }} --version"
   register: miniconda_installed_version
   changed_when: false
-  when: miniconda_version_exec_info.stat.exists
 
 - name: Update installer
   ansible.builtin.include_tasks: update.yml
-  when: miniconda_update and miniconda_version_exec_info.stat.exists
+  when: miniconda_update
 
 - name: Install packages to conda base environment
   ansible.builtin.command: >-

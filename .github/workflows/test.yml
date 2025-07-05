@@ -33,4 +33,4 @@ jobs:
         run: ansible-lint
 
       - name: Run Ansible Playbook Test
-        run: ansible-playbook tests/test.yml
+        run: ansible-playbook -i tests/inventory tests/test.yml

@@ -53,14 +53,100 @@ galaxy_conda_env_packages:
 #
 # ansible_distribution is 'MacOSX' if ansible_system is 'Darwin'
 # ansible_system is 'Linux' on Linux
-miniconda_installer_os: "{{ ansible_distribution if ansible_system == 'Darwin' else ansible_system }}"
+miniconda_installer_os: >-
+  {%- if ansible_system == 'Darwin' -%}
+    MacOSX
+  {%- else -%}
+    {{ ansible_system }}
+  {%- endif -%}
+
 miniconda_installer_arch: "{{ ansible_architecture }}"
-# The installer filename on https://repo.anaconda.com/miniconda/ to fetch and run
+
+# Distribution can be miniforge (default), miniconda, micromamba or anaconda
+miniconda_distribution: "miniforge"
+
+# Examples of installer URL's for the supported distributions:
+#
+#   miniforge:
+#     - https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+#     - https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh
+#     - https://github.com/conda-forge/miniforge/releases/download/25.3.0-3/Miniforge3-25.3.0-3-Linux-x86_64.sh
+#     - https://github.com/conda-forge/miniforge/releases/download/25.3.0-3/Miniforge3-25.3.0-3-MacOSX-arm64.sh
+#
+#   miniconda:
+#     - https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+#     - https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh
+#     - https://repo.anaconda.com/miniconda/Miniconda3-py39_25.5.1-0-Linux-x86_64.sh
+#     - https://repo.anaconda.com/miniconda/Miniconda3-py39_25.5.1-0-MacOSX-arm64.sh
+#
+#   anaconda:
+#     - https://repo.anaconda.com/archive/Anaconda3-2025.06-0-Linux-x86_64.sh
+#     - https://repo.anaconda.com/archive/Anaconda3-2025.06-0-MacOSX-arm64.sh
+#
+#   micromamba:
+#     - https://github.com/mamba-org/micromamba-releases/releases/latest/download/micromamba-linux-64.tar.bz2
+#     - https://github.com/mamba-org/micromamba-releases/releases/latest/download/micromamba-osx-arm64.tar.bz2
+#     - https://github.com/mamba-org/micromamba-releases/releases/download/2.3.0-1/micromamba-linux-64.tar.bz2
+#     - https://github.com/mamba-org/micromamba-releases/releases/download/2.3.0-1/micromamba-osx-arm64.tar.bz2
+
+
+# The installer filename (shell script or tarball)
 miniconda_installer: >-
-  Miniconda3-{{
-    'py' ~ (miniconda_python | replace('.', '')) ~ '_' ~ miniconda_version
-    if miniconda_installer_version != 'latest'
-    else 'latest'
-  }}-{{ miniconda_installer_os }}-{{ miniconda_installer_arch }}.sh
+  {%- if miniconda_distribution == 'miniforge' -%}
+    {%- if miniconda_installer_version == 'latest' -%}
+      Miniforge3-{{ miniconda_installer_os }}-{{ miniconda_installer_arch }}.sh
+    {%- else -%}
+      Miniforge3-{{ miniconda_installer_version }}-{{ miniconda_installer_os }}-{{ miniconda_installer_arch }}.sh
+    {%- endif -%}
+  {%- elif miniconda_distribution == 'miniconda' -%}
+    {%- if miniconda_installer_version == 'latest' -%}
+      Miniconda3-latest-{{ miniconda_installer_os }}-{{ miniconda_installer_arch }}.sh
+    {%- else -%}
+      Miniconda3-py{{ miniconda_installer_python | replace('.', '') }}_
+      {{ miniconda_installer_version }}-
+      {{ miniconda_installer_os }}-{{ miniconda_installer_arch }}.sh
+    {%- endif -%}
+  {%- elif miniconda_distribution == 'anaconda' -%}
+    Anaconda3-{{ miniconda_installer_version }}-{{ miniconda_installer_os }}-{{ miniconda_installer_arch }}.sh
+  {%- elif miniconda_distribution == 'micromamba' -%}
+    {%- set micromamba_os_map = {'MacOSX': 'osx', 'Linux': 'linux'} -%}
+    {%- set micromamba_arch_map = {'x86_64': '64', 'aarch64': 'aarch64', 'arm64': 'arm64'} -%}
+    micromamba-{{ micromamba_os_map[miniconda_installer_os] }}-{{ micromamba_arch_map[miniconda_installer_arch] }}.tar.bz2
+  {%- else -%}
+    {{ fail("Invalid value for 'miniconda_distribution': " ~ miniconda_distribution) }}
+  {%- endif -%}
+
+# The installer download URL (shell script or tarball)
+miniconda_installer_url: >-
+  {%- if miniconda_distribution == 'miniforge' -%}
+    {%- if miniconda_installer_version == 'latest' -%}
+      https://github.com/conda-forge/{{ miniconda_distribution }}/releases/latest/download/{{ miniconda_installer }}
+    {%- else -%}
+      https://github.com/conda-forge/{{ miniconda_distribution }}/releases/download/{{ miniconda_installer_version }}/{{ miniconda_installer }}
+    {%- endif -%}
+  {%- elif miniconda_distribution == 'miniconda' -%}
+    https://repo.anaconda.com/miniconda/{{ miniconda_installer }}
+  {%- elif miniconda_distribution == 'anaconda' -%}
+    https://repo.anaconda.com/archive/{{ miniconda_installer }}
+  {%- elif miniconda_distribution == 'micromamba' -%}
+    {%- if miniconda_installer_version == 'latest' -%}
+      https://github.com/mamba-org/{{ miniconda_distribution }}-releases/releases/latest/download/{{ miniconda_installer }}
+    {%- else -%}
+      https://github.com/mamba-org/{{ miniconda_distribution }}-releases/releases/download/{{ miniconda_installer_version }}/{{ miniconda_installer }}
+    {%- endif -%}
+  {%- else -%}
+    {{ fail("Invalid value for 'miniconda_distribution': " ~ miniconda_distribution) }}
+  {%- endif -%}
+
 # The shell to call the downloaded installer script with
 miniconda_installer_shell: /bin/sh
+
+# Executable for installing/updating conda packages.
+miniconda_executable: >-
+  {%- if miniconda_distribution == 'miniforge' -%}
+    mamba
+  {%- elif miniconda_distribution == 'micromamba' -%}
+    micromamba
+  {%- else -%}
+    conda
+  {%- endif -%}

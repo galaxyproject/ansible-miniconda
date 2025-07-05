@@ -11,7 +11,7 @@
     url: "{{ miniconda_installer_url }}"
     dest: "{{ miniconda_installer_tempfile.path }}"
     force: true
-    mode: '0755'
+    mode: "0755"
 
 - name: Install Conda distribution (shell installers)
   when: miniconda_distribution != 'micromamba'
@@ -37,7 +37,7 @@
       ansible.builtin.file:
         path: "{{ miniconda_prefix }}/bin"
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: Extract Conda tarball to bin directory
       ansible.builtin.unarchive:
@@ -49,7 +49,7 @@
     - name: Ensure micromamba binary is executable
       ansible.builtin.file:
         path: "{{ miniconda_prefix }}/bin/micromamba"
-        mode: '0755'
+        mode: "0755"
         state: file
 
   always:

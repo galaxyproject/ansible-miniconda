@@ -3,21 +3,16 @@
 - name: Test with defaults
   hosts: localhost
   vars:
-    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda"
+    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda/default"
   tasks:
     - name: Run ansible-miniconda role with defaults
       ansible.builtin.include_role:
         name: ansible-miniconda
 
-    - name: Cleanup conda prefix directory
-      ansible.builtin.file:
-        path: "{{ miniconda_prefix }}"
-        state: absent
-
 - name: Test with miniforge
   hosts: localhost
   vars:
-    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda"
+    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda/miniforge"
   tasks:
     - name: Run ansible-miniconda role with miniforge
       ansible.builtin.include_role:
@@ -36,15 +31,10 @@
             packages:
               - zlib
 
-    - name: Cleanup conda prefix directory
-      ansible.builtin.file:
-        path: "{{ miniconda_prefix }}"
-        state: absent
-
 - name: Test with miniconda
   hosts: localhost
   vars:
-    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda"
+    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda/miniconda"
   tasks:
     - name: Run ansible-miniconda role with miniconda
       ansible.builtin.include_role:
@@ -61,15 +51,10 @@
             packages:
               - zlib
 
-    - name: Cleanup conda prefix directory
-      ansible.builtin.file:
-        path: "{{ miniconda_prefix }}"
-        state: absent
-
 - name: Test with anaconda
   hosts: localhost
   vars:
-    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda"
+    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda/anaconda"
   tasks:
     - name: Run ansible-miniconda role with anaconda
       ansible.builtin.include_role:
@@ -87,15 +72,10 @@
             packages:
               - zlib
 
-    - name: Cleanup conda prefix directory
-      ansible.builtin.file:
-        path: "{{ miniconda_prefix }}"
-        state: absent
-
 - name: Test with micromamba
   hosts: localhost
   vars:
-    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda"
+    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda/micromamba"
   tasks:
     - name: Run ansible-miniconda role with micromamba
       ansible.builtin.include_role:
@@ -111,8 +91,3 @@
               - conda-forge
             packages:
               - zlib
-
-    - name: Cleanup conda prefix directory
-      ansible.builtin.file:
-        path: "{{ miniconda_prefix }}"
-        state: absent

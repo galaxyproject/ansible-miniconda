@@ -11,7 +11,10 @@
   when:
     - miniconda_version != 'latest'
     - miniconda_executable != 'micromamba'
-    - (miniconda_installed_version.stdout.split() | last) != miniconda_version
+    - miniconda_installed_version is defined
+    - miniconda_installed_version.stdout | default('') | length > 0
+    - (miniconda_installed_version.stdout.split() | last | default('missing')) != miniconda_version
+    - not ansible_check_mode
 
 - name: Update installer version (latest)
   ansible.builtin.command: >-
@@ -24,8 +27,9 @@
   when:
     - miniconda_version == 'latest'
     - miniconda_executable != 'micromamba'
+    - not ansible_check_mode
 
-- name: Update installer version (exact)
+- name: Update installer version (exact, micromamba)
   ansible.builtin.command: >-
     {{ miniconda_prefix }}/bin/{{ miniconda_executable }} self-update --yes
     {{ '--override-channels --channel' if miniconda_channels else '' }}
@@ -36,9 +40,12 @@
   when:
     - miniconda_version != 'latest'
     - miniconda_executable == 'micromamba'
-    - (miniconda_installed_version.stdout.split() | last) != miniconda_version
+    - miniconda_installed_version is defined
+    - miniconda_installed_version.stdout | default('') | length > 0
+    - (miniconda_installed_version.stdout.split() | last | default('missing')) != miniconda_version
+    - not ansible_check_mode
 
-- name: Update installer version (latest)
+- name: Update installer version (latest, micromamba)
   ansible.builtin.command: >-
     {{ miniconda_prefix }}/bin/{{ miniconda_executable }} self-update --yes
     {{ '--override-channels --channel' if miniconda_channels else '' }}
@@ -48,3 +55,4 @@
   when:
     - miniconda_version == 'latest'
     - miniconda_executable == 'micromamba'
+    - not ansible_check_mode

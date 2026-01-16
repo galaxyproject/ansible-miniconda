@@ -5,6 +5,8 @@
     msg: "'miniconda_prefix' variable is required but not defined."
   when: miniconda_prefix is not defined
 
+# ---- Conda installer ----
+
 - name: Check for executable existence
   ansible.builtin.stat:
     path: "{{ miniconda_prefix }}/bin/{{ miniconda_executable }}"
@@ -12,12 +14,17 @@
 
 - name: Install installer
   ansible.builtin.include_tasks: install.yml
-  when: miniconda_install and not miniconda_exec_info.stat.exists
+  when:
+    - miniconda_install
+    - not miniconda_exec_info.stat.exists
 
 - name: Collect installer version
   ansible.builtin.command: "{{ miniconda_prefix }}/bin/{{ miniconda_executable }} --version"
   register: miniconda_installed_version
   changed_when: false
+  failed_when:
+    - not ansible_check_mode
+    - miniconda_installed_version.rc != 0
 
 - name: Install ToS packages to conda base environment
   ansible.builtin.command: >-
@@ -27,15 +34,21 @@
     {{ miniconda_tos_packages | join(' ') }}
   register: __miniconda_conda_install_conda_output
   changed_when: "'All requested packages already installed' not in __miniconda_conda_install_conda_output.stdout"
-  when: miniconda_tos_packages | length > 0
+  when:
+    - miniconda_tos_packages | length > 0
+    - not ansible_check_mode
 
 - name: Accept Anaconda Terms of Service (ToS)
   ansible.builtin.include_tasks: tos.yml
-  when: miniconda_tos_channels | length > 0
+  when:
+    - miniconda_tos_channels | length > 0
 
 - name: Update installer
   ansible.builtin.include_tasks: update.yml
-  when: miniconda_update
+  when:
+    - miniconda_update
+
+# ---- Conda base environment ----
 
 - name: Install packages to conda base environment
   ansible.builtin.command: >-
@@ -45,7 +58,11 @@
     {{ miniconda_base_env_packages | join(' ') }}
   register: __miniconda_conda_install_conda_output
   changed_when: "'All requested packages already installed' not in __miniconda_conda_install_conda_output.stdout"
-  when: miniconda_base_env_packages | length > 0
+  when:
+    - miniconda_base_env_packages | length > 0
+    - not ansible_check_mode
+
+# ---- Conda environments ----
 
 # Apparently item.value.copy always refers to the built-in copy method of the dict, whereas item.value['copy'] only does
 # if the key 'copy' is not defined
@@ -60,6 +77,7 @@
   args:
     creates: "{{ miniconda_prefix ~ '/envs/' ~ item.key if not item.key.startswith('/') else item.key }}"
   loop: "{{ miniconda_conda_environments | dict2items }}"
+  when: not ansible_check_mode
 
 - name: Update conda envs
   ansible.builtin.command: >-
@@ -69,9 +87,12 @@
     {{ '--name ' ~ item.key if not item.key.startswith('/') else '--prefix ' ~ item.key }}
     {{ '--copy' if (item.value['copy'] is boolean and item.value['copy']) else '' }}
     {{ item.value.packages | join(' ') }}
-  register: __miniconda_conda_install_output
-  changed_when: "'All requested packages already installed' not in __miniconda_conda_install_output.stdout"
+  register: __miniconda_conda_install_conda_output
+  changed_when: "'All requested packages already installed' not in __miniconda_conda_install_conda_output.stdout"
   loop: "{{ miniconda_conda_environments | dict2items }}"
+  when: not ansible_check_mode
+
+# ---- Galaxy Conda environment ----
 
 - name: Create Galaxy conda env
   ansible.builtin.command: >-
@@ -82,4 +103,6 @@
     {{ galaxy_conda_env_packages | join(' ') }}
   args:
     creates: "{{ miniconda_prefix }}/envs/{{ galaxy_conda_env }}"
-  when: galaxy_conda_create_env
+  when:
+    - galaxy_conda_create_env
+    - not ansible_check_mode

@@ -1,3 +1,5 @@
+---
+
 - name: Warn if channels are provided but tos is not supported
   ansible.builtin.debug:
     msg: >
@@ -18,3 +20,4 @@
   when:
     - miniconda_tos_channels | length > 0
     - miniconda_tos_executable | length > 0
+    - not ansible_check_mode

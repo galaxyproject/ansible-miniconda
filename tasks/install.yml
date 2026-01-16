@@ -12,6 +12,7 @@
     dest: "{{ miniconda_installer_tempfile.path }}"
     force: true
     mode: "0755"
+  when: not ansible_check_mode
 
 - name: Install Conda distribution (shell installers)
   when: miniconda_distribution != 'micromamba'
@@ -21,18 +22,21 @@
       ansible.builtin.command: >
         {{ miniconda_installer_shell }}
         {{ miniconda_installer_tempfile.path }} -b -p {{ miniconda_prefix }}
-      register: __conda_install
-      changed_when: __conda_install.rc != 0
+      register: __miniconda_conda_install
+      changed_when: __miniconda_conda_install.rc == 0
+      when: not ansible_check_mode
 
   always:
     - name: Remove installer file
       ansible.builtin.file:
         path: "{{ miniconda_installer_tempfile.path }}"
         state: absent
+      when: not ansible_check_mode
 
 - name: Install Conda distribution (tarball)
   when: miniconda_distribution == 'micromamba'
   block:
+
     - name: Create Conda install directory
       ansible.builtin.file:
         path: "{{ miniconda_prefix }}/bin"
@@ -45,15 +49,18 @@
         dest: "{{ miniconda_prefix }}/bin"
         remote_src: true
         extra_opts: [--strip-components=1]
+      when: not ansible_check_mode
 
     - name: Ensure micromamba binary is executable
       ansible.builtin.file:
         path: "{{ miniconda_prefix }}/bin/micromamba"
         mode: "0755"
         state: file
+      when: not ansible_check_mode
 
   always:
     - name: Remove installer file
       ansible.builtin.file:
         path: "{{ miniconda_installer_tempfile.path }}"
         state: absent
+      when: not ansible_check_mode

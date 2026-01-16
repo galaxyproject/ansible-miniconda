@@ -1,0 +1,51 @@
+---
+
+- name: Cleanup defaults
+  hosts: localhost
+  vars:
+    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda/default"
+  tasks:
+    - name: Cleanup conda prefix directory
+      ansible.builtin.file:
+        path: "{{ miniconda_prefix }}"
+        state: absent
+
+- name: Cleanup miniforge
+  hosts: localhost
+  vars:
+    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda/miniforge"
+  tasks:
+    - name: Cleanup conda prefix directory
+      ansible.builtin.file:
+        path: "{{ miniconda_prefix }}"
+        state: absent
+
+- name: Cleanup miniconda
+  hosts: localhost
+  vars:
+    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda/miniconda"
+  tasks:
+    - name: Cleanup conda prefix directory
+      ansible.builtin.file:
+        path: "{{ miniconda_prefix }}"
+        state: absent
+
+- name: Cleanup anaconda
+  hosts: localhost
+  vars:
+    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda/anaconda"
+  tasks:
+    - name: Cleanup conda prefix directory
+      ansible.builtin.file:
+        path: "{{ miniconda_prefix }}"
+        state: absent
+
+- name: Cleanup micromamba
+  hosts: localhost
+  vars:
+    miniconda_prefix: "{{ lookup('env', 'TRAVIS_BUILD_DIR') | default('/tmp', true) }}/conda/micromamba"
+  tasks:
+    - name: Cleanup conda prefix directory
+      ansible.builtin.file:
+        path: "{{ miniconda_prefix }}"
+        state: absent

@@ -32,5 +32,20 @@ jobs:
       - name: Run ansible-lint
         run: ansible-lint
 
-      - name: Run Ansible Playbook Test
+      - name: Test dry-run before deployment
+        run: ansible-playbook -i tests/inventory tests/test.yml --check --diff | tee /dev/stderr | awk '/changed=[0]/ { exit 1 }'
+
+      - name: Test first deployment
         run: ansible-playbook -i tests/inventory tests/test.yml
+
+      - name: Test dry-run after deployment
+        run: ansible-playbook -i tests/inventory tests/test.yml --check --diff | tee /dev/stderr | awk '/changed=[1-9]/ { exit 1 }'
+
+      - name: Test re-deployment
+        run: ansible-playbook -i tests/inventory tests/test.yml
+
+      - name: Test dry-run after re-deployment
+        run: ansible-playbook -i tests/inventory tests/test.yml --check --diff | tee /dev/stderr | awk '/changed=[1-9]/ { exit 1 }'
+
+      - name: Test cleanup
+        run: ansible-playbook -i tests/inventory tests/cleanup.yml
